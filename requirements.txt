@@ -5,7 +5,8 @@ django-auth-ldap
 pyscrypt
 pyaes
 openpyxl
-sshtunnel
+git+git://github.com/BetterCallDave/sshtunnel@f5d34ff273edb97f664e60fecd407dbcc03c5398
+#egg=sshtunnel
 psycopg2-binary
 RestrictedPython
 cx_Oracle

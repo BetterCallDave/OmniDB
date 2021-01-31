@@ -119,18 +119,28 @@ class Session(object):
                 if self.v_databases[p_database_index]['tunnel_object'] == None or v_create_tunnel:
                     try:
                         if self.v_databases[p_database_index]['tunnel']['key'].strip() != '':
-                            v_file_name = '{0}'.format(str(time.time())).replace('.','_')
-                            v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
-                            with open(v_full_file_name,'w') as f:
-                                f.write(self.v_databases[p_database_index]['tunnel']['key'])
-                            server = SSHTunnelForwarder(
-                                (self.v_databases[p_database_index]['tunnel']['server'], int(self.v_databases[p_database_index]['tunnel']['port'])),
-                                ssh_username=self.v_databases[p_database_index]['tunnel']['user'],
-                                ssh_private_key_password=self.v_databases[p_database_index]['tunnel']['password'],
-                                ssh_pkey = v_full_file_name,
-                                remote_bind_address=(self.v_databases[p_database_index]['database'].v_active_server, int(self.v_databases[p_database_index]['database'].v_active_port)),
-                                logger=logger
-                            )
+                            if 'ssh-' == self.v_databases[p_database_index]['tunnel']['key'].strip()[0:4]:
+                                server = SSHTunnelForwarder(
+                                    (self.v_databases[p_database_index]['tunnel']['server'], int(self.v_databases[p_database_index]['tunnel']['port'])),
+                                    ssh_username=self.v_databases[p_database_index]['tunnel']['user'],
+                                    ssh_private_key_password=self.v_databases[p_database_index]['tunnel']['password'],
+                                    ssh_pkey = paramiko.pkey.PublicBlob.from_string(self.v_databases[p_database_index]['tunnel']['key'].strip()),
+                                    remote_bind_address=(self.v_databases[p_database_index]['database'].v_active_server, int(self.v_databases[p_database_index]['database'].v_active_port)),
+                                    logger=logger
+                                )
+                            else:
+                                v_file_name = '{0}'.format(str(time.time())).replace('.','_')
+                                v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
+                                with open(v_full_file_name,'w') as f:
+                                    f.write(self.v_databases[p_database_index]['tunnel']['key'])
+                                server = SSHTunnelForwarder(
+                                    (self.v_databases[p_database_index]['tunnel']['server'], int(self.v_databases[p_database_index]['tunnel']['port'])),
+                                    ssh_username=self.v_databases[p_database_index]['tunnel']['user'],
+                                    ssh_private_key_password=self.v_databases[p_database_index]['tunnel']['password'],
+                                    ssh_pkey = v_full_file_name,
+                                    remote_bind_address=(self.v_databases[p_database_index]['database'].v_active_server, int(self.v_databases[p_database_index]['database'].v_active_port)),
+                                    logger=logger
+                                )
                         else:
                             server = SSHTunnelForwarder(
                                 (self.v_databases[p_database_index]['tunnel']['server'], int(self.v_databases[p_database_index]['tunnel']['port'])),

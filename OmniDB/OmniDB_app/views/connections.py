@@ -291,18 +291,28 @@ def test_connection(request):
 
             try:
                 if ssh_key.strip() != '':
-                    v_file_name = '{0}'.format(str(time.time())).replace('.','_')
-                    v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
-                    with open(v_full_file_name,'w') as f:
-                        f.write(ssh_key)
-                    server = SSHTunnelForwarder(
-                        (json_object['tunnel']['server'], int(json_object['tunnel']['port'])),
-                        ssh_username=json_object['tunnel']['user'],
-                        ssh_private_key_password=ssh_password,
-                        ssh_pkey = v_full_file_name,
-                        remote_bind_address=(database.v_active_server, int(database.v_active_port)),
-                        logger=None
-                    )
+                    if 'ssh-' == ssh_key[0:4]:
+                        server = SSHTunnelForwarder(
+                            (json_object['tunnel']['server'], int(json_object['tunnel']['port'])),
+                            ssh_username=json_object['tunnel']['user'],
+                            ssh_private_key_password=ssh_password,
+                            ssh_pkey = paramiko.pkey.PublicBlob.from_string(ssh_key),
+                            remote_bind_address=(database.v_active_server, int(database.v_active_port)),
+                            logger=None
+                        )
+                    else:
+                        v_file_name = '{0}'.format(str(time.time())).replace('.','_')
+                        v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
+                        with open(v_full_file_name,'w') as f:
+                            f.write(ssh_key)
+                        server = SSHTunnelForwarder(
+                            (json_object['tunnel']['server'], int(json_object['tunnel']['port'])),
+                            ssh_username=json_object['tunnel']['user'],
+                            ssh_private_key_password=ssh_password,
+                            ssh_pkey = v_full_file_name,
+                            remote_bind_address=(database.v_active_server, int(database.v_active_port)),
+                            logger=None
+                        )
                 else:
                     server = SSHTunnelForwarder(
                         (json_object['tunnel']['server'], int(json_object['tunnel']['port'])),
